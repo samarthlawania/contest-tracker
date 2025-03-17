@@ -66,23 +66,26 @@ async function fetchCodeChefContests() {
 
 // 📌 Fetch Leetcode Contests using Puppeteer
 async function fetchLeetcodeContests() {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.goto('https://leetcode.com/contest/');
-    
-    const contests = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll('.contest-card')).map(card => ({
-            name: card.querySelector('.text-label-1').innerText,
-            platform: 'Leetcode',
-            url: `https://leetcode.com${card.querySelector('a').getAttribute('href')}`,
-            startTime: new Date(card.querySelector('.text-label-2').innerText),
-            status: new Date(card.querySelector('.text-label-2').innerText) > new Date() ? 'upcoming' : 'past',
-        }));
-    });
+    try {
+        const response = await fetch('https://leetcode.com/contest/api/list/');
+        console.log("Leetcode API Response:", response); // Debugging
+        const data = await response.json();
+        console.log("Leetcode API Response:", data); // Debugging
 
-    await browser.close();
-    return contests;
+        if (!data || !data.contests) throw new Error("Invalid response from Leetcode");
+
+        return data.contests.map(contest => ({
+            name: contest.title,
+            platform: "Leetcode",
+            start_time: new Date(contest.start_time * 1000), // Convert Unix timestamp
+            url: `https://leetcode.com/contest/${contest.title_slug}`,
+        }));
+    } catch (error) {
+        console.error("Error fetching Leetcode contests:", error);
+        return [];
+    }
 }
+
 
 // 📌 Fetch All Contests
 async function fetchAllContests() {
