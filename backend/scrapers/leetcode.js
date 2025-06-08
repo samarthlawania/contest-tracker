@@ -1,8 +1,9 @@
 import axios from "axios";
 import { load } from "cheerio";
-
+import { WebScrapper } from "../WebScrapperfunctions/index.js";
 export async function fetchLeetcodeContests() {
     try {
+        await WebScrapper('LEETCODE')
         const url = "https://leetcode.com/contest/";
         const { data } = await axios.get(url, {
             headers: {
